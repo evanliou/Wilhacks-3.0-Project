@@ -3,9 +3,7 @@ package com.mygdx.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import java.util.Iterator;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
@@ -15,18 +13,18 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 
 public class Game extends ApplicationAdapter {
-	OrthographicCamera camera;
 	SpriteBatch batch;
 	Texture square;
 	Texture bg;
-	Rectangle player;
 	Texture pipeImage;
+	Rectangle player;
 	Array<Rectangle> tPipes;
 	Array<Rectangle> bPipes;
 	long lastPipeSpawn;
 	double velocity = 0.0;
 	double gravity = .6;
 	int height = MathUtils.random(300, 600);
+	boolean behindPipe = false;
 
 	@Override
 	public void create() {
@@ -38,7 +36,6 @@ public class Game extends ApplicationAdapter {
 		// camera.setToOrtho(false, 800, 800);
 
 		batch = new SpriteBatch();
-
 		player = new Rectangle();
 		player.x = 500 / 2 - 64 / 2;
 		player.y = 50;
@@ -65,7 +62,7 @@ public class Game extends ApplicationAdapter {
 	private void spawnBPipe() {
 		Rectangle pipe = new Rectangle();
 		pipe.x = 800;
-		pipe.y = height - 2000;
+		pipe.y = height - 800;
 		pipe.width = 70;
 		pipe.height = 600;
 		bPipes.add(pipe);
@@ -79,11 +76,13 @@ public class Game extends ApplicationAdapter {
 		batch.begin();
 
 		batch.draw(square, player.x, player.y);
+		
 		for (Rectangle pipe : tPipes) {
 			batch.draw(pipeImage, pipe.x, pipe.y);
 		}
+
 		for (Rectangle pipe : bPipes) {
-			batch.draw(pipeImage, pipe.x, pipe.y + 1200);
+			batch.draw(pipeImage, pipe.x, pipe.y);
 		}
 
 		batch.end();
@@ -97,6 +96,7 @@ public class Game extends ApplicationAdapter {
 
 		if (player.y < 0)
 			player.y = 0;
+
 		if (player.y > 540)
 			player.y = 540;
 
@@ -104,7 +104,6 @@ public class Game extends ApplicationAdapter {
 			spawnTPipe();
 			spawnBPipe();
 		}
-		
 
 		for (Iterator<Rectangle> incr = tPipes.iterator(); incr.hasNext();) {
 			Rectangle tPipe = incr.next();
@@ -115,10 +114,9 @@ public class Game extends ApplicationAdapter {
 			if (tPipe.overlaps(player)) {
 				System.out.println("You died");
 			}
-			// height = MathUtils.random(300, 600);
-
+			height = MathUtils.random(300, 600);
 		}
-
+		
 		for (Iterator<Rectangle> incr = bPipes.iterator(); incr.hasNext();) {
 			Rectangle bPipe = incr.next();
 			bPipe.x -= 400 * Gdx.graphics.getDeltaTime();
