@@ -15,15 +15,14 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.mygdx.Cube;
 
-public class GameScreen implements Screen {
+public class ZenGameScreen implements Screen {
 
     final Cube game;
 
     SpriteBatch batch;
     Texture square;
-    
+    Texture nightBg;
     Texture pipeImage;
-    
     Rectangle player;
     Array<Rectangle> tPipes;
     Array<Rectangle> bPipes;
@@ -35,13 +34,12 @@ public class GameScreen implements Screen {
     int score = 0;
     BitmapFont font;
     Sound jumpSound;
-    Sound failSound;
-    
-    Texture dayBg1, dayBg2;
+
+    Texture nightBg1, nightBg2;
     float yBgMax, yBg1, yBg2;
     final int BACKGROUND_MOVE_SPEED = -50;
-    
-    public GameScreen(final Cube game) {
+
+    public ZenGameScreen(final Cube game) {
         this.game = game;
 
         square = new Texture("DREAM.jpg");
@@ -56,12 +54,12 @@ public class GameScreen implements Screen {
         tPipes = new Array<Rectangle>();
         bPipes = new Array<Rectangle>();
         jumpSound = Gdx.audio.newSound(Gdx.files.internal("jump.wav"));
-        failSound = Gdx.audio.newSound(Gdx.files.internal("lose.wav"));
-        dayBg1 = new Texture(Gdx.files.internal("daybg.jpg"));
-        dayBg2 = new Texture(Gdx.files.internal("daybg.jpg"));
+        nightBg1 = new Texture(Gdx.files.internal("nightbg.jpg"));
+        nightBg2 = new Texture(Gdx.files.internal("nightbg.jpg"));
         yBgMax = 800;
         yBg1 = 0;
         yBg2 = yBgMax+yBgMax;
+        
 
         spawnTPipe();
         spawnBPipe();
@@ -89,19 +87,24 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        ScreenUtils.clear(0, 0, 0, 0);
+
         yBg1 += BACKGROUND_MOVE_SPEED * Gdx.graphics.getDeltaTime();
         yBg2 = yBg1 +yBgMax;
         if(yBg1 <=yBgMax*(-1)){
             yBg1 = 0;
             yBg2 = yBgMax+yBgMax;
         }
-        ScreenUtils.clear(0, 0, 0, 0);
+
         batch.begin();
-        batch.draw(dayBg1, yBg1,0);
-        batch.draw(dayBg2 , yBg2,0);
+        batch.draw(nightBg1,  yBg1 ,0);
+        batch.draw(nightBg2,  yBg2, 0);
         batch.draw(square, player.x, player.y);
         font.draw(batch, "Score: " + score, 670, 590);
-        font.draw(batch, "High Score: " + game.highScore, 670, 570);
+        
+        font.draw(batch, "Zen Mode Press esc to Exit", 610, 550);
+        font.draw(batch, "Press z to Restart", 670, 530);
+        font.draw(batch, "Press r to Return to Regular Mode", 560, 510);
 
         for (Rectangle pipe : tPipes) {
             batch.draw(pipeImage, pipe.x, pipe.y);
@@ -117,6 +120,17 @@ public class GameScreen implements Screen {
             velocity = -10;
             jumpSound.play();
         }
+        if (Gdx.input.isKeyPressed(Keys.R)) {
+            game.setScreen(new GameScreen(game));
+
+        }
+        if (Gdx.input.isKeyPressed(Keys.Z)) {
+            game.setScreen(new ZenGameScreen(game));
+           
+        }
+        if (Gdx.input.isKeyPressed(Keys.ESCAPE)) {
+            game.dispose();
+        }
 
         velocity += gravity;
         player.y -= velocity;
@@ -127,6 +141,7 @@ public class GameScreen implements Screen {
         if (player.y > 600 - 64)
             player.y = 600 - 64;
 
+        
         if (TimeUtils.nanoTime() - lastPipeSpawn > 600000000) {
             spawnTPipe();
             spawnBPipe();
@@ -139,11 +154,10 @@ public class GameScreen implements Screen {
                 incr.remove();
             }
             if (tPipe.overlaps(player)) {
-                failSound.play();
                 System.out.println("You died");
                 System.out.println("Score: " + score);
-                game.setScreen(new GameOverScreen(game));
-                dispose();
+                
+            
                 
             }
             height = MathUtils.random(300, 600);
@@ -156,17 +170,12 @@ public class GameScreen implements Screen {
                 incr.remove();
             }
             if (bPipe.overlaps(player)) {
-                failSound.play();
                 System.out.println("You died");
                 System.out.println("Score: " + score);
-                
-                game.setScreen(new GameOverScreen(game));
-                dispose();
+               
             }
             score += 1;
-            if (score > game.highScore) {
-                game.highScore = score;
-            }
+            
         }
 
     }
@@ -204,7 +213,6 @@ public class GameScreen implements Screen {
     public void dispose() {
         batch.dispose();
         square.dispose();
-
         
     }
 
